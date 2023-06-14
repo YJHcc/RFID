@@ -1,5 +1,4 @@
-// revised tag detection of tagRFID_2.c
-// use a changed plan section of RFID_run plan.txt
+// represent a changed plan section of RFID_run plan.txt
 
 #include <stdio.h>
 #include <stdint.h>
@@ -21,39 +20,8 @@
 
 int spi_fd;
 int uart_fd;
-bool isTagDetectionEnabled = true;
-uint8_t infoUID[4];
-uint8_t uid[4];
-// SS 핀 설정
-int ss_gpio_fd;             // fd : 파일 디스크립터로, 특정 파일에 접근할 때 사용하는 추상적인 값
-char ss_gpio_path[64];
 
-int set_spi_pin_mode(int pin, int mode) {
-    int fd;
-    char buf[256];
-    snprintf(buf, sizeof(buf), "/sys/class/gpio/gpio%d/direction", pin);
-
-    fd = open(buf, O_WRONLY);
-
-    if (mode == 4) {
-        write(fd, "high", 4);
-    } else if (mode == 0) {
-        write(fd, "low", 3);
-    }
-
-    // 교대로 클럭 신호 변경
-    usleep(100000);  // 100ms 대기
-    if (mode == 4) {
-        write(fd, "low", 3);
-    } else if (mode == 0) {
-        write(fd, "high", 4);
-    }
-
-    close(fd);
-    return 0;
-}
-
-// BBAI-64 and MFRC522 SPI 통신 초기화
+// beaglebone board SPI 통신 초기화
 int spi_init() {
     spi_fd = open(SPI_DEVICE, O_RDWR);
 
@@ -113,43 +81,16 @@ void print_hex_message(const uint8_t* data, int length) {
     write(spi_fd, "\n", 1);
 }
 
-// MFRC522 모듈과 통신되도록 작성
-uint8_t command = {0x0A};  // 태그가 감지되면 MFRC522 모듈에게 "READ_UID" 명령을 전송하여 UID 정보를 요청
-// uint8_t uid[4];
-void readUID(uint8_t* uid) {
-    // 태그 읽기 명령을 전송
-    if (command >= 0x00 && command<=0xFF) {
-    	uint8_t response[4];  // UID를 저장할 배열
-
-    	// SS 핀을 LOW로 설정하여 MFRC522 모듈과 통신 시작
-    	write(ss_gpio_fd, "0", 1);
-
-    	// 명령을 MFRC522 모듈로 전송
-    	spi_transfer(command, NULL, sizeof(command));
-
-    	// 응답을 MFRC522 모듈로부터 수신
-    	spi_transfer(NULL, response, sizeof(response));
-
-    	// SS 핀을 HIGH로 설정하여 통신 종료
-    	write(ss_gpio_fd, "1", 1);
-
-    	// 수신된 UID 정보를 uid 배열에 복사
-   	    for (int i = 0; i < 4; i++) {
-   	        uid[i] = response[i];
-  	    }
-
-        endTagDetection();
-   	    // if (readUID(uid)==1) {
-	    //     return true;    	// UID 정보 읽기 성공 시 true 반환
-  	    // } else {
-  	    //     return false;    	// UID 정보 읽기 실패 시 false 반환
-  	    // }
-    }
-}
+bool isTagDetectionEnabled = true;
 
 // 태그 종료 코드 작성
 void endTagDetection() {
+    
+    //if (mfrc522_read_uid == 1) {
     bool isTagDetectionEnabled = false;   // 태그 감지 종료 동작 수행
+    //    bool isTagPresent = false;
+                                              // 예시로는 다음과 같이 태그 감지 상태를 변경
+    //}
 }
 
 // UID 정보 읽기(태그 감지, UID 정보 읽기, 읽어온 UID 정보 처리, UID 정보 전송, 태그 종료)
@@ -157,11 +98,28 @@ void mfrc522_read_uid() {
     mfrc522_init(RST_PIN);
 
 // 태그 감지
+// 
+    uint8_t infoUID[4];
     while (isTagDetectionEnabled) {
-// UID 정보 읽기
-        readUID(uid);
+        if (isTagPresent()) {
+            printf("detected a tag info \n");   // 태그가 감지되었을 때의 동작
+            endTagDetection();   // 태그가 감지되고 UID 정보 읽기 성공할 경우 태그 종료
+       //break;
+        }
         usleep(500000); // 0.5sec 대기 후 다시 감지
     }
+    // UID 정보 읽기
+    uint8_t uid[4];
+    if (readUID(uid)) {
+    // UID 정보 읽기 성공
+    // uid 배열에 읽어온 UID 정보가 저장됨
+        for (unsigned char i=0; i<4; i++) {
+        infoUID[i] = uid[i];
+        }
+        print_hex_message(infoUID, length(uid));
+        } else {
+        // UID 정보 읽기 실패
+        }
 }
 
 // UID 정보 UART로 전송
@@ -180,28 +138,12 @@ int uart_init() {
 
     struct termios options;
     // tcgetattr : uart_fd로 지정된 UART 디바이스의 현재 설정 속성을 가져옴
-    // UART 설정
-    tcgetattr(uart_fd, &options);
-    options.c_cflag = B9600 | CS8 | CLOCAL | CREAD;
-    options.c_iflag = 0;
-    options.c_oflag = 0;
-    options.c_lflag = 0;
-    tcflush(uart_fd, TCIFLUSH);
-    tcsetattr(uart_fd, TCSANOW, &options);
 
+    cfsetispeed(&options, B9600);   // 입력 속도 설정
+    cfsetospeed(&options, B9600);   // 출력 속도 설정, 송수신 측의 동일한 데이터 속도 맞추기 위함
+    cfmakeraw(&options);            // 데이터를 raw한 상태로 초기화하기 위함
     return 0;
 }
-
-/*
-// UART 데이터 송수신
-int uart_transfer(uint8_t* tx_data, uint8_t* rx_data, int len) {
-    int bytes_written = write(uart_fd, tx_data, len);
-
-    int bytes_read = read(uart_fd, rx_data, len);
-
-    return 0;
-}
-*/
 
 int initialize_rst_pin(int rst_pin) {
     // RST 핀 설정 및 초기화 함수
@@ -227,13 +169,9 @@ int initialize_rst_pin(int rst_pin) {
 
 int main() {
 
-/*
-    // SPI 인터페이스 핀 모드 설정
-    set_spi_pin_mode(28, 4);  // P17 - SPI6_CS0
-    set_spi_pin_mode(118, 0); // P26 - SPI1_CLK
-    set_spi_pin_mode(40, 4);  // P18 - SPI6_D1, MOSI
-    set_spi_pin_mode(39, 4);  // P21 - SPI6_D0, MISO
-*/
+// SS 핀 설정
+    int ss_gpio_fd;             // fd : 파일 디스크립터로, 특정 파일에 접근할 때 사용하는 추상적인 값
+    char ss_gpio_path[64];
 
 // SS 핀 열기
 /*
@@ -316,8 +254,10 @@ int main() {
         usleep(500000);
     }
 
-// UID 정보 UART로 PC 전송
+// UID 정보 UART로 전송
     send_uid_uart(uart_fd, length(uart_fd));
+
+    endTagDetection();
 
 // 파일 디스크립터 닫기
     close(spi_fd);

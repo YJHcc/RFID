@@ -1,0 +1,80 @@
+/*
+  * beaglebone ai-64 보드에서 RFID RC522 모듈과 SPI 통신 하기 위해서 DTO를
+  * 통한 설정을 해주려고함.
+*/
+
+/dts-v1/;
+/plugin/;
+
+// #include <dt-bindings/interrupt-controller/irq.h>
+
+// DTO(Device Tree Overlay) 설정을 활용하여 SPI 인터페이스 활성화
+&{/chosen} {
+    overlays {
+        // BBAI64-SPI0_0 = __TIMESTAMP__;
+        BBAI64-SPI1_0 = __TIMESTAMP__;
+        BBAI64-SPI6_0 = __TIMESTAMP__;
+    };
+};
+
+/*
+&ocp {
+    P9_17_pinmux { pinctrl-0 = <&P9_17_spi_cs_pin>; };   /* CS0 */
+    P9_21_pinmux { pinctrl-0 = <&P9_21_spi_pin>; }; 	/* MISO */
+    P9_18_pinmux { pinctrl-0 = <&P9_18_spi_pin>; };      /* MOSI */
+    P9_22_pinmux { pinctrl-0 = <&P9_22_spi_sclk_pin>; }; /* CLK */
+};
+*/
+
+&spi1_clk_pin {  		/* P9_26, SCK */
+    pinctrl-single,pins = <
+        0x118 0x30  /* MODE 0 */
+    >;
+};
+
+&spi6_d0_pin {  		/* P9_21, MISO */
+    pinctrl-single,pins = <
+        0x39 0x34  /* MODE 4 */
+    >;
+};
+
+&spi6_d1_pin {  		/* P9_18, MOSI */
+    pinctrl-single,pins = <
+        0x40 0x14  /* MODE 4 */
+    >;
+};
+
+&spi6_cs0_pin {  		/* P9_17, SS(CS) */
+    pinctrl-single,pins = <
+        0x28 0x14  /* MODE 4 */
+    >;
+};
+
+&spi_1{
+    status = "okay";
+    #address-cells = <1>;
+    #size-cells = <0>;
+   
+    channel@1 {
+        reg = <1>;
+        compatible = "ti,beaglebone-ai-64";
+        pinctrl-names = "default";
+        pinctrl-0 = <&spi1_clk_pin>;
+        spi-max-frequency = <16000000>;
+    };
+};
+
+&spi_6{
+    status = "okay";
+    #address-cells = <1>;
+    #size-cells = <0>;
+   
+    channel@6 {
+        reg = <6>;
+        compatible = "ti,beaglebone-ai-64";
+        pinctrl-names = "default";
+        pinctrl-0 = <&spi6_cs0_pin>, <&spi6_d1_pin>, <&spi6_d0_pin>;
+        spi-max-frequency = <16000000>;
+    };
+};
+

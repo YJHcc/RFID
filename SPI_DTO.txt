@@ -1,0 +1,62 @@
+/*
+  * beaglebone ai-64 보드에서 RFID RC522 모듈과 SPI 통신 하기 위해서 DTO를
+  * 통한 설정을 해주려고함.
+*/
+
+/dts-v1/;
+/plugin/;
+
+// #include <dt-bindings/interrupt-controller/irq.h>
+
+// DTO(Device Tree Overlay) 설정을 활용하여 SPI 인터페이스 활성화
+&{/chosen} {
+    overlays {
+        // BBAI64-SPI0_0 = __TIMESTAMP__;
+        BBAI64-SPI1_0 = __TIMESTAMP__;
+        BBAI64-SPI6_0 = __TIMESTAMP__;
+    };
+};
+
+&ocp {
+    P9_17_pinmux { pinctrl-0 = <&P9_17_spi_cs_pin>; };   /* CS0 */
+    P9_21_pinmux { pinctrl-0 = <&P9_21_spi_pin>; }; 	/* MISO */
+    P9_18_pinmux { pinctrl-0 = <&P9_18_spi_pin>; };      /* MOSI */
+    P9_22_pinmux { pinctrl-0 = <&P9_22_spi_sclk_pin>; }; /* CLK */
+};
+
+&spi_1{
+    status = "okay";
+    #address-cells = <1>;
+    #size-cells = <0>;
+   
+    channel@1 {
+        reg = <1>;
+        compatible = "ti,beaglebone-ai-64";
+        pinctrl-names = "default";
+        pinctrl-0 = <&spi1_clk_pin>;
+        //reg = <0x0>;                            /* Use chip select 0 */
+        //interrupt-parent = <&gpio6>;            /* Interrupt on GPIO6[18] */
+        symlink = "bone/spi/2.0";	// BB-AI64의 경우 SPI 액세스를 위해선 /dev/spidevX.Y 경로 작성, ex) SPI1의 첫 번째 장치에 액세스 : /dev/spidev1.0, SPI2의 두 번째 장치에 액세스 : /dev/spidev2.1 ex) modprobe spi_dev, modprobe spidev로 확인 가능.
+        spi-max-frequency = <16000000>;
+        //spi-cpha;
+    };
+};
+
+&spi_6{
+    status = "okay";
+    #address-cells = <1>;
+    #size-cells = <0>;
+   
+    channel@6 {
+        reg = <6>;
+        compatible = "ti,beaglebone-ai-64";
+        pinctrl-names = "default";
+        pinctrl-0 = <&spi6_cs0_pin>, <&spi6_d1_pin>, <&spi6_d0_pin>;
+        //reg = <0x0>;                            /* Use chip select 0 */
+        //interrupt-parent = <&gpio6>;            /* Interrupt on GPIO6[18] */
+        symlink = "bone/spi/2.0";
+        spi-max-frequency = <16000000>;
+        //spi-cpha;   // CLK Phase 설정, 현재는 default 값
+    };
+};
+

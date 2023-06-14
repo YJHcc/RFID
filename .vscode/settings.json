@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.dts": "dts",
+        "spidev.h": "c",
+        "stdio.h": "c"
+    }
+}
