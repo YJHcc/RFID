@@ -1,0 +1,78 @@
+★★★★★★★★★★★★ project plan ★★★★★★★★★★★★
+
+SPI 통신 초기화.
+SPI 모드 설정
+최대 전송 속도 설정 (1MHz)
+
+SPI 데이터 송수신
+
+MFRC522 초기화
+태그 감지 코드 작성
+UID 정보 읽기 코드 작성
+읽어온 UID 정보 처리
+UID 정보 전송(RFID -> board)
+태그 종료
+
+UART 통신 초기화
+UID 정보 UART로 write(포트의 핀 번호, 속도 설정 필요)
+pc로 정보 송신
+pc에서 정보 수신
+
+int main () {
+   SS(SDA) 핀 설정
+   RST 핀 설정
+   MISO 핀 설정
+   MOSI 핀 설정
+   SCK 핀 설정
+
+   SPI 통신 초기화
+   UART 통신 초기화
+   UID 정보 읽기(SPI)
+
+   UID 정보를 UART로 write
+   pc로 정보 송신
+   pc에서 정보 수신
+   파일 디스크립터 닫기
+}
+★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
+
+BeagleBone AI-64 보드와 RFID RC-522 모듈을 연동하여 카드 태그 시 카드 정보를 보드로 전달하고, 전달된 정보를 UART 통신을 통해 PC로 전송하기 위한 과정.
+
+1. 하드웨어 연결:
+
+   RFID RC-522와 BeagleBone AI-64 보드의 핀 매핑.
+   BeagleBone AI-64의 SPI 핀:
+   SDA(SS): SPI CS(Chip Select)
+   SCK: SPI SCLK(Serial Clock)
+   MISO: SPI MISO(Master In Slave Out)
+   MOSI: SPI MOSI(Master Out Slave In)
+
+   보드에서 PC로 전송할 BeagleBone AI-64의 UART 핀:
+      TX: UART transfer 핀
+      RX: receive 핀
+
+2. 개발 환경 설정: 운영체제 등등
+
+3. 필수 라이브러리 및 드라이버 설치:
+
+   BeagleBone AI-64 보드에서 RFID RC-522 모듈을 사용하기 위한 라이브러리 및 드라이버 설치.
+
+4. SPI 통신 설정:
+
+   BeagleBone AI-64 보드에서 SPI 통신을 사용하기 위한, SPI 장치 활성화 및 모듈 설정. (이를 위해 SPI 모듈의 설정 파일(/boot/uEnv.txt)을 편집하여 SPI를 활성화합니다.) -> ???
+
+5. UART 통신 설정:
+
+   BeagleBone AI-64 보드에서 UART 통신을 사용하기 위한, UART 장치 활성화 및 UART 모듈 설정. (이를 위해 UART 모듈의 설정 파일(/boot/uEnv.txt)을 편집하여 UART를 활성화합니다.) -> ..
+
+6. 코딩:
+
+   - SPI 통신을 통해 카드 태그시 발생한 데이터를 BeagleBone AI-64 보드로 송수신한 후 UART 통신을 통해 PC로 데이터 전송.
+
+7. 컴파일 및 실행:
+
+8. PC에서 UART로 데이터 수신:
+
+   - UART 통신을 사용하여 BeagleBone AI-64 보드로부터 데이터를 수신할 수 있도록 코드 추가.
+
