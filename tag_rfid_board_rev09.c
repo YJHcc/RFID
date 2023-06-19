@@ -58,7 +58,7 @@ int InitializeRstPin(int RST_PIN) {
 
 // SPI 통신 초기화
 int SpiInit() {
-    spi_fd = open("SPI_DEVICE", O_RDWR);
+    spi_fd = open(SPI_DEVICE, O_RDWR);
 
     // SPI 모드 설정
     uint8_t mode = SPI_MODE_0;
@@ -213,9 +213,6 @@ int main() {
     write(ss_gpio_fd, "out", 3);    // or "in"
                                     // 파일 디스크립터에 out 이라는 문자열을 쓰기 위해, 데이터 길이인 3만큼을 파일에 씀.
 
-// SS 핀에 값 쓰기 (0으로 설정)
-    write(ss_gpio_fd, "0", 1);  // low
-
 // RST 핀 설정 및 초기화 함수 call
 //    InitializeRstPin(RST_PIN);
 
@@ -285,10 +282,10 @@ int main() {
         if (!PiccReadCardSerial(nuidPICC))
             continue;
 
-        printf("PICC type: ");
+        // SS 핀에 값 쓰기 (0으로 설정)
+        write(ss_gpio_fd, "0", 1);  // low
 
-        // SS 핀에 값 쓰기 (1로 설정)
-        write(ss_gpio_fd, "1", 1);
+        printf("PICC type: ");
 
         // 카드의 타입을 읽어옴
         uint8_t piccType = PiccGetType(nuidPICC[0]);
@@ -327,6 +324,9 @@ int main() {
             WriteUidUart(uartData);
         }
 
+        // SS 핀에 값 쓰기 (1로 설정)
+        write(ss_gpio_fd, "1", 1);  // high
+        
         // PICC 종료
         usleep(100000);
     }
