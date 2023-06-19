@@ -36,7 +36,7 @@ int main () {
 }
 ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
 
-★★★★★★★★★★★★ project plan revision 02 ★★★★★★★★★★★★
+★★★★★★★★★★★★ project plan revision 02 (using) ★★★★★★★★★★★★
 
 MFRC522 초기화
 
@@ -59,6 +59,12 @@ UART 통신 초기화
 UART로 데이터 기록
 
 int main() {
+   SS(SDA) 핀 설정
+   RST 핀 설정
+   MISO 핀 설정
+   MOSI 핀 설정
+   SCK 핀 설정
+
    MFRC522 초기화
    SPI 통신 초기화
    UART 통신 초기화
