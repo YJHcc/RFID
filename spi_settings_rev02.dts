@@ -1,8 +1,12 @@
-/dts-v1/;
-/plugin/;
+/* Enabling SPIDEV with cape manager : URL reference */
+/* https://elinux.org/BeagleBone_Black_Enable_SPIDEV */
 
 /* SPI6 */
 /* D1 Output and D0 Input */
+
+
+/dts-v1/;
+/plugin/;
 
 / {
     compatible = "ti,beaglebone", "ti,beaglebone-ai-64";
