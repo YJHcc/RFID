@@ -16,7 +16,7 @@
 #define SS_PIN 28                   // SPI SS(Chip Select) GPIO 핀 번호
 #define MOSI_PIN 40
 #define MISO_PIN 39
-#define SCK_PIN 118
+#define SCK_PIN 38
 
 // the device tree source needs to be Modified first as follow.
 // BONE_PIN(P9_17, spi, P9_17A(PIN_OUTPUT, 4), P9_17B(PIN_INPUT, 7));  // spi6_cs0
@@ -62,11 +62,11 @@ int SpiInit() {
 
     // SPI 모드 설정
     uint8_t mode = SPI_MODE_0;
-    // ioctl(spi_fd, SPI_IOC_WR_MODE, &mode);
+    ioctl(spi_fd, SPI_IOC_WR_MODE, &mode);
 
     // 최대 전송 속도 설정 (1MHz)
     uint32_t speed = 1000000;
-    // ioctl(spi_fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
+    ioctl(spi_fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
     return 0;
 }
 
@@ -88,11 +88,8 @@ int SpiTransfer(uint8_t* tx_data, uint8_t* rx_data, int len) {
 }
 
 // MFRC522 초기화 (SoftReset 이용, SPI 통신을 통해 내부 레지스터를 초기화)
-/*
-MFRC522 모듈을 초기화 하는 이유
- - 예기치 않은 동작, 이전에 처리되었거나 남아있는 카드 상태 정보를 
-   초기화하고 새로운 카드 감지.
-*/
+// MFRC522 모듈을 초기화 하는 이유 : 예기치 않은 동작, 이전에 처리되었거나 남아있는 카드 상태 정보를 초기화하고 새로운 카드 감지.
+
 void MFRC522Init() { 
     uint8_t tx_data[] = {0x0F}; // MFRC522에 softreset 명령어를 전송하기 위한 데이터 값
     uint8_t rx_data[sizeof(tx_data)];
