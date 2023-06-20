@@ -106,7 +106,7 @@ void MFRC522Init() {
 
 // 카드가 존재하는지 확인
 int PiccIsNewCardPresent() {
-    uint8_t tx_data[] = {0x0C};   // MFRC522에 해당 함수를 전송하기 위한 데이터 패턴 값
+    uint8_t tx_data[] = {0x52};   // MFRC522에 해당 함수를 전송하기 위한 데이터 패턴 값, 0x52 : find all the cards antenna area
     uint8_t rx_data[sizeof(tx_data)];
     memset(rx_data, 0, sizeof(rx_data));
     if (SpiTransfer(tx_data, rx_data, sizeof(tx_data)) < 0) {   // SPI 통신 실패 시 카드 존재 여부 확인 불가를 판별하기 위함.
@@ -118,7 +118,7 @@ int PiccIsNewCardPresent() {
 
 // 카드 UID 정보 읽기
 int PiccReadCardSerial(uint8_t* uid) {
-    uint8_t tx_data[] = {0x0C};   // MFRC522에 해당 함수를 전송하기 위한 데이터 패턴 값
+    uint8_t tx_data[] = {0x93};   // MFRC522에 해당 함수를 전송하기 위한 데이터 패턴 값, 0x93 : election card
     uint8_t rx_data[sizeof(tx_data)];
     memset(rx_data, 0, sizeof(rx_data));
     if (SpiTransfer(tx_data, rx_data, sizeof(tx_data)) < 0) {
@@ -326,7 +326,7 @@ int main() {
 
         // SS 핀에 값 쓰기 (1로 설정)
         write(ss_gpio_fd, "1", 1);  // high
-        
+
         // PICC 종료
         usleep(100000);
     }
