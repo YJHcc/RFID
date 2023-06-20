@@ -96,7 +96,7 @@ void MFRC522Init() {
 
     if (SpiTransfer(tx_data, rx_data, sizeof(tx_data)) < 0) {
         printf("Failed to send SPI message\n");
-        return;
+        return -1;
     }
     usleep(5000); // 잠시 대기
 }
